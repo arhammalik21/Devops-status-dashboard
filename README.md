@@ -8,38 +8,37 @@ A flagship **Flask web dashboard** that monitors **real-time system metrics** (C
 ![AWS](https://img.shields.io/badge/Deploy-AWS_EC2-FF9900?logo=amazon-aws)
 
 ## 🧰 Tech Stack
-
 | Technology | Role |
 |---|---|
-| **Python (Flask)** | Web framework serving the dashboard & API |
-| **psutil** | Real-time system monitoring (CPU, Memory, Disk, Network) |
-| **Docker** | Containerizes the app for portable deployment |
-| **GitHub Actions** | CI/CD pipeline — build, push, deploy on every push |
-| **AWS EC2** | Production hosting via SSH deployment |
-| **Linux / Bash** | Deployment scripts & server management |
+| **Python (Flask)** | Web framework & API |
+| **psutil** | Real-time system telemetry (CPU, RAM, Disk, Network) |
+| **Vanilla JS** | Live gauge animations & Sparkline charts |
+| **CSS3** | Premium Glassmorphism UI |
 
 ## ⚙️ Features
+- 📊 **Live System Metrics** — Monitor your actual CPU, RAM, and Disk usage.
+- 📈 **Trend Sparklines** — See historical data for the last 60 seconds.
+- 🔄 **Auto-refresh** — Dashboard polls `/api/status` every 3 seconds.
+- 🕵️ **Process Table** — See which apps are using the most CPU right now.
+- 🐳 **Docker Ready** — Includes a Dockerfile for when you're ready to containerize.
+- 🤖 **CI/CD Ready** — Pre-configured pipeline for AWS EC2 (stored in `workflows_backup/`).
 
-- 📊 **Real System Metrics** — Live CPU, RAM, Disk, and Network usage via `psutil`
-- 📈 **Sparkline History** — Visual trend charts for every metric
-- 🔄 **Auto-refresh** — Dashboard polls `/api/status` every 3 seconds
-- 🕵️ **Process Explorer** — Monitor top processes by CPU and Memory usage
-- 🐳 **Fully Containerized** — Multi-stage Docker image with health checks & Gunicorn
-- 🚀 **Automated CI/CD** — Push to `main` → build → push to Docker Hub → deploy to EC2
-- 📋 **Pipeline History** — View recent CI/CD runs with status indicators
-- 🏗️ **Architecture Diagram** — Visual flow from Git push to live app
-- 🌙 **Premium Dark UI** — Glassmorphism design with animated particles
+## 🚀 Quick Start (Run Locally)
 
-## 🧪 Run Locally
+Monitor your own computer's performance in seconds:
 
 ```bash
-# Clone and run with Python
+# 1. Clone the repository
 git clone https://github.com/arhammalik21/Devops-status-dashboard.git
 cd Devops-status-dashboard
+
+# 2. Install dependencies
 pip install -r requirements.txt
+
+# 3. Run the dashboard
 python app.py
-# Open http://localhost:5000
 ```
+**Open [http://localhost:5000](http://localhost:5000) in your browser.**
 
 ```bash
 # Or run with Docker
@@ -65,21 +64,14 @@ docker run -p 5000:5000 devops-dashboard
 | `GET /api/status` | JSON metrics (CPU, memory, build info, etc.) |
 | `GET /health` | Health check for load balancers |
 
-## 🏗️ CI/CD Pipeline
+## ☁️ Advanced: Deployment Roadmap
 
-```
-Git Push → GitHub Actions → Docker Build → Docker Hub → SSH Deploy → AWS EC2
-```
+When you are ready to take this project to the cloud, follow these steps:
 
-The pipeline (`.github/workflows/deploy.yml`) requires these **GitHub Secrets**:
-
-| Secret | Description |
-|---|---|
-| `DOCKERHUB_USERNAME` | Docker Hub username |
-| `DOCKERHUB_TOKEN` | Docker Hub access token |
-| `EC2_HOST` | EC2 instance public IP |
-| `EC2_USER` | SSH username (usually `ubuntu`) |
-| `EC2_SSH_KEY` | Private SSH key for EC2 |
+1.  **Dockerize**: Run `docker build -t devops-dashboard .` to test the container locally.
+2.  **Docker Hub**: Push your image to Docker Hub so it can be accessed from anywhere.
+3.  **AWS EC2**: Spin up a Linux server and run your container there.
+4.  **CI/CD**: Move `workflows_backup/deploy.yml.bak` back to `.github/workflows/deploy.yml` and add your **GitHub Secrets** to enable automatic deployments.
 
 ## 📁 Project Structure
 
