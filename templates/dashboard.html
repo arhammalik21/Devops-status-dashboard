@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Real-time DevOps Status Dashboard — Monitor CPU, memory, deployments, and CI/CD pipeline health.">
+    <title>DevOps Status Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="bg-particles" id="bgParticles"></div>
+    <div class="app-wrapper">
+
+        <!-- ── Header ──────────────────────────────────────────── -->
+        <header class="header" id="header">
+            <div class="header-left">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                            <path d="M2 17l10 5 10-5"/>
+                            <path d="M2 12l10 5 10-5"/>
+                        </svg>
+                    </div>
+                    <div class="logo-text">
+                        <h1>DevOps Dashboard</h1>
+                        <span class="logo-subtitle">Real-time Infrastructure Monitor</span>
+                    </div>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="env-badge" id="envBadge">
+                    <span class="env-dot"></span>
+                    <span id="envText">development</span>
+                </div>
+                <div class="live-indicator" id="liveIndicator">
+                    <span class="live-dot"></span>
+                    <span>LIVE</span>
+                </div>
+                <div class="header-meta">
+                    <span class="meta-label">App Uptime</span>
+                    <span class="meta-value" id="uptimeValue">--</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+
+            <!-- ── Info Bar ────────────────────────────────────── -->
+            <section class="info-bar" id="infoBar">
+                <div class="info-chip" id="chipVersion">
+                    <span class="chip-icon">🏷️</span>
+                    <div class="chip-text">
+                        <span class="chip-label">Version</span>
+                        <span class="chip-value" id="appVersion">--</span>
+                    </div>
+                </div>
+                <div class="info-chip" id="chipBuild">
+                    <span class="chip-icon">🔨</span>
+                    <div class="chip-text">
+                        <span class="chip-label">Build</span>
+                        <span class="chip-value" id="buildNumber">--</span>
+                    </div>
+                </div>
+                <div class="info-chip" id="chipContainer">
+                    <span class="chip-icon">🐳</span>
+                    <div class="chip-text">
+                        <span class="chip-label">Container</span>
+                        <span class="chip-value mono" id="containerId">--</span>
+                    </div>
+                </div>
+                <div class="info-chip" id="chipDeploy">
+                    <span class="chip-icon">📅</span>
+                    <div class="chip-text">
+                        <span class="chip-label">Deployed</span>
+                        <span class="chip-value" id="deployTime">--</span>
+                    </div>
+                </div>
+                <div class="info-chip status-chip" id="chipStatus">
+                    <span class="chip-icon">✅</span>
+                    <div class="chip-text">
+                        <span class="chip-label">Pipeline</span>
+                        <span class="chip-value status-passing" id="buildStatus">--</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ── Gauge Cards with Sparklines ─────────────────── -->
+            <section class="gauges-grid" id="gaugesGrid">
+                <div class="gauge-card" id="cpuCard">
+                    <div class="gauge-header">
+                        <span class="gauge-icon">⚡</span>
+                        <span class="gauge-title">CPU Usage</span>
+                    </div>
+                    <div class="gauge-ring-wrapper">
+                        <svg class="gauge-ring" viewBox="0 0 120 120">
+                            <circle class="gauge-bg" cx="60" cy="60" r="52"/>
+                            <circle class="gauge-fill" id="cpuRing" cx="60" cy="60" r="52"
+                                    stroke-dasharray="326.73" stroke-dashoffset="326.73"/>
+                        </svg>
+                        <div class="gauge-value-center">
+                            <span class="gauge-percent" id="cpuPercent">0</span>
+                            <span class="gauge-unit">%</span>
+                        </div>
+                    </div>
+                    <canvas class="sparkline" id="cpuSparkline" height="35"></canvas>
+                </div>
+
+                <div class="gauge-card" id="memCard">
+                    <div class="gauge-header">
+                        <span class="gauge-icon">🧠</span>
+                        <span class="gauge-title">Memory</span>
+                    </div>
+                    <div class="gauge-ring-wrapper">
+                        <svg class="gauge-ring" viewBox="0 0 120 120">
+                            <circle class="gauge-bg" cx="60" cy="60" r="52"/>
+                            <circle class="gauge-fill" id="memRing" cx="60" cy="60" r="52"
+                                    stroke-dasharray="326.73" stroke-dashoffset="326.73"/>
+                        </svg>
+                        <div class="gauge-value-center">
+                            <span class="gauge-percent" id="memPercent">0</span>
+                            <span class="gauge-unit">%</span>
+                        </div>
+                    </div>
+                    <div class="gauge-detail" id="memDetail">-- / --</div>
+                    <canvas class="sparkline" id="memSparkline" height="35"></canvas>
+                </div>
+
+                <div class="gauge-card" id="diskCard">
+                    <div class="gauge-header">
+                        <span class="gauge-icon">💾</span>
+                        <span class="gauge-title">Disk</span>
+                    </div>
+                    <div class="gauge-ring-wrapper">
+                        <svg class="gauge-ring" viewBox="0 0 120 120">
+                            <circle class="gauge-bg" cx="60" cy="60" r="52"/>
+                            <circle class="gauge-fill" id="diskRing" cx="60" cy="60" r="52"
+                                    stroke-dasharray="326.73" stroke-dashoffset="326.73"/>
+                        </svg>
+                        <div class="gauge-value-center">
+                            <span class="gauge-percent" id="diskPercent">0</span>
+                            <span class="gauge-unit">%</span>
+                        </div>
+                    </div>
+                    <div class="gauge-detail" id="diskDetail">-- / --</div>
+                    <canvas class="sparkline" id="diskSparkline" height="35"></canvas>
+                </div>
+
+                <div class="gauge-card" id="netCard">
+                    <div class="gauge-header">
+                        <span class="gauge-icon">🌐</span>
+                        <span class="gauge-title">Network</span>
+                    </div>
+                    <div class="gauge-ring-wrapper">
+                        <svg class="gauge-ring" viewBox="0 0 120 120">
+                            <circle class="gauge-bg" cx="60" cy="60" r="52"/>
+                            <circle class="gauge-fill" id="netRing" cx="60" cy="60" r="52"
+                                    stroke-dasharray="326.73" stroke-dashoffset="326.73"/>
+                        </svg>
+                        <div class="gauge-value-center">
+                            <span class="gauge-percent" id="netPercent">0</span>
+                            <span class="gauge-unit">%</span>
+                        </div>
+                    </div>
+                    <div class="gauge-detail" id="netDetail">↑ -- ↓ --</div>
+                    <canvas class="sparkline" id="netSparkline" height="35"></canvas>
+                </div>
+            </section>
+
+            <!-- ── Metrics Row ─────────────────────────────────── -->
+            <section class="metrics-row" id="metricsRow">
+                <div class="metric-card" id="metricRequests">
+                    <div class="metric-icon-wrap req-wrap">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                        </svg>
+                    </div>
+                    <div class="metric-info">
+                        <span class="metric-label">Requests / min</span>
+                        <span class="metric-value" id="requestsPerMin">--</span>
+                    </div>
+                </div>
+                <div class="metric-card" id="metricTotal">
+                    <div class="metric-icon-wrap total-wrap">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 20V10"/>
+                            <path d="M18 20V4"/>
+                            <path d="M6 20v-4"/>
+                        </svg>
+                    </div>
+                    <div class="metric-info">
+                        <span class="metric-label">Total Requests</span>
+                        <span class="metric-value" id="totalRequests">--</span>
+                    </div>
+                </div>
+                <div class="metric-card" id="metricLatency">
+                    <div class="metric-icon-wrap lat-wrap">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                    </div>
+                    <div class="metric-info">
+                        <span class="metric-label">Avg Response</span>
+                        <span class="metric-value" id="responseTime">-- ms</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ── Per-CPU Bars ─────────────────────────────────── -->
+            <section class="percpu-section" id="perCpuSection">
+                <div class="section-header">
+                    <h2>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="section-icon">
+                            <rect x="4" y="4" width="16" height="16" rx="2"/>
+                            <rect x="9" y="9" width="6" height="6"/>
+                            <path d="M15 2v2M9 2v2M15 20v2M9 20v2M2 15h2M2 9h2M20 15h2M20 9h2"/>
+                        </svg>
+                        Per-Core CPU Usage
+                    </h2>
+                    <span class="section-badge" id="coreCount">-- cores</span>
+                </div>
+                <div class="percpu-bars" id="perCpuBars"></div>
+            </section>
+
+            <!-- ── System Info + Processes Grid ────────────────── -->
+            <div class="two-col-grid">
+                <!-- System Info -->
+                <section class="sysinfo-section" id="sysInfoSection">
+                    <div class="section-header">
+                        <h2>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="section-icon">
+                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                                <line x1="8" y1="21" x2="16" y2="21"/>
+                                <line x1="12" y1="17" x2="12" y2="21"/>
+                            </svg>
+                            System Info
+                        </h2>
+                    </div>
+                    <div class="sysinfo-grid" id="sysInfoGrid">
+                        <div class="sysinfo-item"><span class="si-label">Hostname</span><span class="si-value" id="siHostname">--</span></div>
+                        <div class="sysinfo-item"><span class="si-label">OS</span><span class="si-value" id="siOS">--</span></div>
+                        <div class="sysinfo-item"><span class="si-label">Architecture</span><span class="si-value" id="siArch">--</span></div>
+                        <div class="sysinfo-item"><span class="si-label">Python</span><span class="si-value" id="siPython">--</span></div>
+                        <div class="sysinfo-item"><span class="si-label">CPU Cores</span><span class="si-value" id="siCores">--</span></div>
+                        <div class="sysinfo-item"><span class="si-label">Total Memory</span><span class="si-value" id="siMemory">--</span></div>
+                        <div class="sysinfo-item"><span class="si-label">Total Disk</span><span class="si-value" id="siDisk">--</span></div>
+                        <div class="sysinfo-item"><span class="si-label">IP Address</span><span class="si-value mono" id="siIP">--</span></div>
+                        <div class="sysinfo-item"><span class="si-label">System Uptime</span><span class="si-value" id="siUptime">--</span></div>
+                        <div class="sysinfo-item"><span class="si-label">Network Sent</span><span class="si-value" id="siNetSent">--</span></div>
+                        <div class="sysinfo-item"><span class="si-label">Network Recv</span><span class="si-value" id="siNetRecv">--</span></div>
+                        <div class="sysinfo-item"><span class="si-label">Memory Avail</span><span class="si-value" id="siMemAvail">--</span></div>
+                    </div>
+                </section>
+
+                <!-- Top Processes -->
+                <section class="process-section" id="processSection">
+                    <div class="section-header">
+                        <h2>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="section-icon">
+                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                            </svg>
+                            Top Processes
+                        </h2>
+                        <span class="section-badge">LIVE</span>
+                    </div>
+                    <div class="process-table-wrap">
+                        <table class="process-table" id="processTable">
+                            <thead>
+                                <tr>
+                                    <th>PID</th>
+                                    <th>Name</th>
+                                    <th>CPU %</th>
+                                    <th>MEM %</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="processBody"></tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+            <!-- ── Pipeline History ────────────────────────────── -->
+            <section class="pipeline-section" id="pipelineSection">
+                <div class="section-header">
+                    <h2>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="section-icon">
+                            <polyline points="16 18 22 12 16 6"/>
+                            <polyline points="8 6 2 12 8 18"/>
+                        </svg>
+                        Recent Pipelines
+                    </h2>
+                    <span class="section-badge">CI/CD</span>
+                </div>
+                <div class="pipeline-list" id="pipelineList"></div>
+            </section>
+
+            <!-- ── Architecture Diagram ────────────────────────── -->
+            <section class="arch-section" id="archSection">
+                <div class="section-header">
+                    <h2>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="section-icon">
+                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                            <line x1="8" y1="21" x2="16" y2="21"/>
+                            <line x1="12" y1="17" x2="12" y2="21"/>
+                        </svg>
+                        Pipeline Architecture
+                    </h2>
+                </div>
+                <div class="arch-flow">
+                    <div class="arch-node"><div class="arch-icon">👨‍💻</div><span>Git Push</span></div>
+                    <div class="arch-arrow"><svg viewBox="0 0 40 16" fill="none"><path d="M0 8h32M28 3l6 5-6 5" stroke="currentColor" stroke-width="2"/></svg></div>
+                    <div class="arch-node active-node"><div class="arch-icon">⚙️</div><span>GitHub Actions</span></div>
+                    <div class="arch-arrow"><svg viewBox="0 0 40 16" fill="none"><path d="M0 8h32M28 3l6 5-6 5" stroke="currentColor" stroke-width="2"/></svg></div>
+                    <div class="arch-node"><div class="arch-icon">🐳</div><span>Docker Hub</span></div>
+                    <div class="arch-arrow"><svg viewBox="0 0 40 16" fill="none"><path d="M0 8h32M28 3l6 5-6 5" stroke="currentColor" stroke-width="2"/></svg></div>
+                    <div class="arch-node"><div class="arch-icon">☁️</div><span>AWS EC2</span></div>
+                    <div class="arch-arrow"><svg viewBox="0 0 40 16" fill="none"><path d="M0 8h32M28 3l6 5-6 5" stroke="currentColor" stroke-width="2"/></svg></div>
+                    <div class="arch-node live-node"><div class="arch-icon">🌍</div><span>Live App</span></div>
+                </div>
+            </section>
+
+        </main>
+
+        <footer class="footer" id="footer">
+            <span>DevOps Status Dashboard v2.0 &copy; 2026</span>
+            <span class="footer-sep">·</span>
+            <span>Flask + Docker + GitHub Actions + AWS EC2</span>
+            <span class="footer-sep">·</span>
+            <span>Real-time metrics via psutil</span>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>
